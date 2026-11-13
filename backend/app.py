@@ -1,23 +1,11 @@
+
 """
 HydroSentry ML Risk API
------------------------
-Flask API for flood / landslide risk inference.
-
-Models:
-- Random Forest -> static/background risk
-- LSTM -> dynamic/time-series risk
-- Late fusion -> final risk score
-
-Run from the project root:
-    python backend/app.py
-
-API:
-    GET  /
-    GET  /health
-    POST /predict
+Flask API for flood / landslide risk inference
 """
 
 from pathlib import Path
+from datetime import datetime, timezone
 
 import joblib
 import numpy as np
@@ -69,6 +57,13 @@ TIME_SERIES_FEATURES = 4
 
 
 # -------------------------------------------------------------------
+# SENSOR DATA STORAGE
+# -------------------------------------------------------------------
+
+latest_sensor_data = None
+
+
+# -------------------------------------------------------------------
 # RISK CLASSIFICATION
 # -------------------------------------------------------------------
 
@@ -84,7 +79,7 @@ def risk_level_from_score(score):
 
 
 # -------------------------------------------------------------------
-# HEALTH ENDPOINT
+# HOME ENDPOINT
 # -------------------------------------------------------------------
 
 @app.route("/", methods=["GET"])
@@ -94,6 +89,10 @@ def home():
         "service": "HydroSentry ML Risk API"
     })
 
+
+# -------------------------------------------------------------------
+# HEALTH ENDPOINT
+# -------------------------------------------------------------------
 
 @app.route("/health", methods=["GET"])
 def health():
@@ -105,6 +104,73 @@ def health():
             "lstm_scaler": "loaded"
         }
     })
+
+
+# -------------------------------------------------------------------
+# ESP32 SENSOR DATA ENDPOINT
+# -------------------------------------------------------------------
+
+@app.route("/sensor-data", methods=["POST"])
+def receive_sensor_data():
+    global latest_sensor_data
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "Invalid JSON data"
+        }), 400
+
+    required_fields = [
+        "distance_cm",
+        "water_level_raw",
+        "soil_moisture_raw",
+        "rain_raw",
+        "temperature_c",
+        "humidity_pct"
+    ]
+
+    missing = [
+        field for field in required_fields
+        if field not in data
+    ]
+
+    if missing:
+        return jsonify({
+            "error": "Missing sensor values",
+            "missing": missing
+        }), 400
+
+    try:
+        for field in required_fields:
+            if data[field] is not None:
+                float(data[field])
+
+    except (ValueError, TypeError):
+        return jsonify({
+            "error": "Sensor values must be numeric or null"
+        }), 400
+
+    latest_sensor_data = {
+        **data,
+        "received_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    return jsonify({
+        "status": "success",
+        "message": "Sensor data received"
+    }), 200
+
+
+@app.route("/sensor-data", methods=["GET"])
+def get_sensor_data():
+    if latest_sensor_data is None:
+        return jsonify({
+            "status": "waiting",
+            "message": "No sensor data received yet"
+        }), 200
+
+    return jsonify(latest_sensor_data), 200
 
 
 # -------------------------------------------------------------------
@@ -120,10 +186,6 @@ def predict():
         return jsonify({
             "error": "Request body must contain valid JSON."
         }), 400
-
-    # ---------------------------------------------------------------
-    # Validate static features
-    # ---------------------------------------------------------------
 
     required_static = [
         "slope_angle",
@@ -141,10 +203,6 @@ def predict():
             "error": "Missing static feature(s).",
             "missing": missing_static
         }), 400
-
-    # ---------------------------------------------------------------
-    # Validate time-series data
-    # ---------------------------------------------------------------
 
     if "timeseries" not in data:
         return jsonify({
@@ -172,7 +230,6 @@ def predict():
     ]
 
     for index, row in enumerate(ts):
-
         if not isinstance(row, dict):
             return jsonify({
                 "error": f"Timestep {index} must be an object."
@@ -190,11 +247,6 @@ def predict():
             }), 400
 
     try:
-
-        # -----------------------------------------------------------
-        # Random Forest
-        # -----------------------------------------------------------
-
         static_X = np.array([[
             float(data["slope_angle"]),
             float(data["soil_type_code"]),
@@ -204,10 +256,6 @@ def predict():
         rf_score = float(
             rf_model.predict_proba(static_X)[0][1]
         )
-
-        # -----------------------------------------------------------
-        # LSTM
-        # -----------------------------------------------------------
 
         ts_array = np.array([
             [
@@ -234,10 +282,6 @@ def predict():
             )[0][0]
         )
 
-        # -----------------------------------------------------------
-        # Late Fusion
-        # -----------------------------------------------------------
-
         final_score = (
             RF_WEIGHT * rf_score
             + LSTM_WEIGHT * lstm_score
@@ -248,10 +292,6 @@ def predict():
         )
 
         risk_level = risk_level_from_score(final_score)
-
-        # -----------------------------------------------------------
-        # Response
-        # -----------------------------------------------------------
 
         return jsonify({
             "rf_score": round(rf_score, 3),
@@ -265,14 +305,12 @@ def predict():
         })
 
     except (ValueError, TypeError) as error:
-
         return jsonify({
             "error": "Invalid numeric input.",
             "details": str(error)
         }), 400
 
     except Exception as error:
-
         app.logger.exception("Prediction failed.")
 
         return jsonify({
@@ -287,7 +325,9 @@ def predict():
 
 if __name__ == "__main__":
     import os
+
     port = int(os.environ.get("PORT", 5000))
+
     app.run(
         host="0.0.0.0",
         port=port,
