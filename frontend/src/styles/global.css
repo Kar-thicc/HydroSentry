@@ -11,95 +11,35 @@
   --hs-ivory: #f5f5f5;
   --hs-sage: #a0a0a0;
   --hs-rose: #ff8a32;
-
-  color-scheme: dark;
 }
 
-/* Main dashboard background */
+/* HydroSentry Graphite + Orange background override */
+
 html,
 body,
 #root {
-  background-color: #101010 !important;
-  color: #f5f5f5;
+  background: #101010 !important;
+  color: #f5f5f5 !important;
 }
 
-/* Remove green backgrounds */
-.bg-green-50,
-.bg-green-100,
-.bg-green-500,
-.bg-green-600,
-.bg-emerald-50,
-.bg-emerald-100,
-.bg-emerald-500,
-.bg-emerald-600,
-.bg-teal-50,
-.bg-teal-100,
-.bg-teal-500,
-.bg-teal-600 {
+body {
+  min-height: 100vh;
+}
+
+.bg-green-950,
+.bg-green-900,
+.bg-green-800,
+.bg-emerald-950,
+.bg-emerald-900,
+.bg-teal-950,
+.bg-teal-900 {
+  background-color: #101010 !important;
+}
+
+.bg-green-700,
+.bg-emerald-800,
+.bg-teal-800 {
   background-color: #1c1c1c !important;
-}
-
-/* Main dark surfaces */
-.bg-slate-950,
-.bg-slate-900,
-.bg-gray-950,
-.bg-gray-900 {
-  background-color: #101010 !important;
-}
-
-.bg-slate-800,
-.bg-gray-800,
-.bg-slate-700,
-.bg-gray-700 {
-  background-color: #252525 !important;
-}
-
-/* Orange accent elements */
-.bg-cyan-500,
-.bg-cyan-600,
-.bg-teal-400,
-.bg-emerald-400 {
-  background-color: #ff8a32 !important;
-}
-
-.text-cyan-400,
-.text-cyan-500,
-.text-teal-400,
-.text-emerald-400 {
-  color: #ff8a32 !important;
-}
-
-/* Borders */
-.border-green-500,
-.border-emerald-500,
-.border-teal-500,
-.border-cyan-500 {
-  border-color: #ff8a32 !important;
-}
-
-/* Text */
-.text-white {
-  color: #f5f5f5;
-}
-
-.text-slate-400,
-.text-gray-400 {
-  color: #a0a0a0;
-}
-
-/* Cards */
-.rounded-xl,
-.rounded-2xl {
-  border-color: #333333;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #101010;
 }
 
 ::-webkit-scrollbar-thumb {
