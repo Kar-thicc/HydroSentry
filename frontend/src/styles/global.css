@@ -2,15 +2,15 @@
 @import "tailwindcss";
 
 :root {
-  --hs-bg: #080A08;
-  --hs-surface: #171D16;
-  --hs-accent: #A3E635;
-  --hs-ivory: #F4F7EF;
-  --hs-sage: #84CC16;
-  --hs-rose: #FB7185;
-  --hs-muted: rgb(244 247 239 / 0.68);
-  --hs-faint: rgb(244 247 239 / 0.42);
-  --hs-border: rgb(163 230 53 / 0.22);
+  --hs-bg: #101010;
+  --hs-surface: #252525;
+  --hs-accent: #FF8A32;
+  --hs-ivory: #F5F5F5;
+  --hs-sage: #86EFAC;
+  --hs-rose: #EF4444;
+  --hs-muted: rgb(245 245 245 / 0.68);
+  --hs-faint: rgb(245 245 245 / 0.42);
+  --hs-border: rgb(255 138 50 / 0.22);
 }
 
 * {
@@ -45,7 +45,7 @@ body {
 
 [class~="bg-white/5"],
 [class~="bg-white/[0.02]"] {
-  background-color: rgb(163 230 53 / 0.07) !important;
+  background-color: rgb(255 138 50 / 0.07) !important;
 }
 
 [class~="text-white"],
@@ -55,7 +55,7 @@ body {
 }
 
 [class~="text-slate-300"] {
-  color: rgb(244 247 239 / 0.84) !important;
+  color: rgb(245 245 245 / 0.84) !important;
 }
 
 [class~="text-slate-400"],
@@ -74,10 +74,10 @@ body {
 }
 
 [class~="border-white/15"] {
-  border-color: rgb(244 247 239 / 0.18) !important;
+  border-color: rgb(245 245 245 / 0.18) !important;
 }
 
-/* Cyan accents become lime */
+/* Primary accent: orange */
 [class*="text-cyan-"] {
   color: var(--hs-accent) !important;
 }
@@ -87,60 +87,60 @@ body {
 }
 
 [class*="bg-cyan-"] {
-  background-color: rgb(163 230 53 / 0.10) !important;
+  background-color: rgb(255 138 50 / 0.12) !important;
 }
 
-/* Emerald accents */
+/* Success indicators: green */
 [class*="text-emerald-"] {
-  color: #A3E635 !important;
+  color: var(--hs-sage) !important;
 }
 
 [class*="border-emerald-"] {
-  border-color: rgb(163 230 53 / 0.35) !important;
+  border-color: rgb(134 239 172 / 0.4) !important;
 }
 
 [class*="bg-emerald-"] {
-  background-color: rgb(163 230 53 / 0.10) !important;
+  background-color: rgb(134 239 172 / 0.10) !important;
 }
 
-/* Amber warnings */
+/* Warning indicators: orange */
 [class*="text-amber-"],
 [class*="text-orange-"] {
-  color: #FBBF24 !important;
+  color: var(--hs-accent) !important;
 }
 
 [class*="border-amber-"],
 [class*="border-orange-"] {
-  border-color: rgb(251 191 36 / 0.45) !important;
+  border-color: rgb(255 138 50 / 0.5) !important;
 }
 
 [class*="bg-amber-"],
 [class*="bg-orange-"] {
-  background-color: rgb(251 191 36 / 0.12) !important;
+  background-color: rgb(255 138 50 / 0.14) !important;
 }
 
-/* Red critical alerts */
+/* Critical alerts: red */
 [class*="text-red-"] {
-  color: #FB7185 !important;
+  color: var(--hs-rose) !important;
 }
 
 [class*="border-red-"] {
-  border-color: rgb(251 113 133 / 0.55) !important;
+  border-color: rgb(239 68 68 / 0.55) !important;
 }
 
 [class*="bg-red-"] {
-  background-color: rgb(251 113 133 / 0.14) !important;
+  background-color: rgb(239 68 68 / 0.14) !important;
 }
 
 /* Hover effects */
 [class~="hover:bg-white/[0.04]"]:hover,
 [class~="hover:bg-white/[0.05]"]:hover,
 [class~="hover:bg-white/[0.06]"]:hover {
-  background-color: rgb(163 230 53 / 0.10) !important;
+  background-color: rgb(255 138 50 / 0.10) !important;
 }
 
 [class~="hover:bg-slate-900/80"]:hover {
-  background-color: #20291D !important;
+  background-color: #333333 !important;
 }
 
 [class~="shadow-xl"] {
