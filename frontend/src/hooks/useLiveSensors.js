@@ -1,66 +1,87 @@
-import { useEffect, useState } from 'react'
-import { sensorData } from '../data/sensorData'
 
-function randomChange(value, amount) {
-  return value + (Math.random() * amount * 2 - amount)
-}
+import { useEffect, useState } from 'react'
+
+const API_URL = 'https://hydrosentry-1sy4.onrender.com/sensor-data'
 
 function useLiveSensors() {
-  const [sensors, setSensors] = useState(sensorData)
+  const [sensors, setSensors] = useState([])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSensors((currentSensors) =>
-        currentSensors.map((sensor) => ({
-          ...sensor,
+    let isMounted = true
 
-          rainfall: Math.max(
-            0,
-            Number(randomChange(sensor.rainfall, 2).toFixed(1))
-          ),
+    const fetchSensorData = async () => {
+      try {
+        const response = await fetch(API_URL)
 
-          waterLevel: Math.max(
-            0,
-            Number(randomChange(sensor.waterLevel, 0.04).toFixed(2))
-          ),
+        if (!response.ok) {
+          throw new Error('Failed to fetch sensor data')
+        }
 
-          flowRate: Math.max(
-            0,
-            Number(randomChange(sensor.flowRate, 0.15).toFixed(2))
-          ),
+        const data = await response.json()
 
-          soilMoisture: Math.min(
-            100,
-            Math.max(
-              0,
-              Number(randomChange(sensor.soilMoisture, 1).toFixed(1))
-            )
-          ),
+        if (!isMounted) return
 
-          temperature: Number(
-            randomChange(sensor.temperature, 0.2).toFixed(1)
-          ),
+        if (data.status === 'waiting') {
+          setSensors([])
+          return
+        }
 
-          humidity: Math.min(
-            100,
-            Math.max(
-              0,
-              Number(randomChange(sensor.humidity, 0.5).toFixed(1))
-            )
-          ),
+        setSensors([
+          {
+            id: 'NODE-001',
+            location: 'ESP32 Live Sensor Node',
+            status: 'Online',
 
-          // Simulated ground-tilt telemetry
-          tiltDeg: Math.max(
-            0,
-            Number(randomChange(sensor.tiltDeg, 0.03).toFixed(3))
-          ),
+            // Raw sensor readings
+            rainRaw: data.rain_raw,
+            waterLevelRaw: data.water_level_raw,
+            soilMoistureRaw: data.soil_moisture_raw,
 
-          lastUpdate: 'just now',
-        }))
-      )
-    }, 3000)
+            // Environmental readings
+            temperature: data.temperature_c,
+            humidity: data.humidity_pct,
 
-    return () => clearInterval(interval)
+            // Ultrasonic sensor
+            distance: data.distance_cm,
+
+            // Not currently measured
+            rainfall: null,
+            waterLevel: null,
+            flowRate: null,
+            soilMoisture: null,
+
+            tiltDeg: null,
+            slopeAngle: 28,
+            soilTypeCode: 2,
+            historicalRiskScore: 0.42,
+
+            lastUpdate: data.received_at
+              ? new Date(data.received_at).toLocaleTimeString()
+              : 'Just now',
+          },
+        ])
+      } catch (error) {
+        console.error('HydroSentry sensor fetch error:', error)
+
+        if (isMounted) {
+          setSensors((currentSensors) =>
+            currentSensors.map((sensor) => ({
+              ...sensor,
+              status: 'Warning',
+            }))
+          )
+        }
+      }
+    }
+
+    fetchSensorData()
+
+    const interval = setInterval(fetchSensorData, 3000)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
   }, [])
 
   return sensors
