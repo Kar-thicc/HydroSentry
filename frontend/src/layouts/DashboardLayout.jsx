@@ -1,3 +1,4 @@
+
 import {
   Activity,
   Bell,
@@ -45,19 +46,21 @@ const navigation = [
 
 function DashboardLayout({ children }) {
   return (
-    <div className="min-h-screen bg-[#0A3323] text-[#F7F4D5]">
+    <div className="min-h-screen bg-[#101010] text-[#F5F5F5]">
+
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-white/10 bg-[#0A3323] lg:block">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-white/10 bg-[#181818] lg:block">
+
         {/* Logo */}
         <div className="flex h-20 items-center border-b border-white/10 px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10">
-              <Waves className="h-5 w-5 text-cyan-400" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-orange-400/20 bg-orange-400/10">
+              <Waves className="h-5 w-5 text-orange-400" />
             </div>
 
             <div>
               <h1 className="text-lg font-bold tracking-tight">
-                Hydro<span className="text-cyan-400">Sentry</span>
+                Hydro<span className="text-orange-400">Sentry</span>
               </h1>
 
               <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
@@ -79,7 +82,7 @@ function DashboardLayout({ children }) {
                 key={item.label}
                 icon={item.icon}
                 to={item.path}
-             >
+              >
                 {item.label}
               </NavItem>
             ))}
@@ -91,8 +94,8 @@ function DashboardLayout({ children }) {
           <div className="rounded-xl border border-white/5 bg-white/[0.03] p-3">
             <div className="flex items-center gap-3">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-50" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-400" />
               </span>
 
               <div>
@@ -110,9 +113,10 @@ function DashboardLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <main className="min-h-screen lg:ml-64">
+      <main className="min-h-screen bg-[#101010] lg:ml-64">
+
         {/* Header */}
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/10 bg-[#0A3323]/90 px-5 backdrop-blur-xl sm:px-8">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/10 bg-[#181818]/95 px-5 backdrop-blur-xl sm:px-8">
           <div>
             <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
               Regional Operations
@@ -124,11 +128,12 @@ function DashboardLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Live status */}
-            <div className="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 sm:flex">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
 
-              <span className="text-xs font-medium text-emerald-400">
+            {/* Live status */}
+            <div className="hidden items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/5 px-3 py-1.5 sm:flex">
+              <span className="h-2 w-2 rounded-full bg-orange-400" />
+
+              <span className="text-xs font-medium text-orange-400">
                 LIVE
               </span>
             </div>
@@ -148,7 +153,7 @@ function DashboardLayout({ children }) {
         </header>
 
         {/* Page */}
-        <section className="p-5 sm:p-8">
+        <section className="min-h-screen bg-[#101010] p-5 sm:p-8">
           {children}
         </section>
       </main>
@@ -164,7 +169,7 @@ function NavItem({ children, icon: Icon, to }) {
       className={({ isActive }) =>
         `group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
           isActive
-            ? 'bg-cyan-400/10 text-cyan-400'
+            ? 'bg-orange-400/10 text-orange-400'
             : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
         }`
       }
@@ -174,7 +179,7 @@ function NavItem({ children, icon: Icon, to }) {
           <Icon
             className={`h-4 w-4 ${
               isActive
-                ? 'text-cyan-400'
+                ? 'text-orange-400'
                 : 'text-slate-500 group-hover:text-slate-300'
             }`}
           />
@@ -185,4 +190,5 @@ function NavItem({ children, icon: Icon, to }) {
     </NavLink>
   )
 }
+
 export default DashboardLayout
