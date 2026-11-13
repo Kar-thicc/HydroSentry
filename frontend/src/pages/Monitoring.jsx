@@ -1,3 +1,4 @@
+
 import {
   Activity,
   Droplets,
@@ -7,24 +8,11 @@ import {
   Wind,
   Sprout,
   Clock,
+  Radio,
+  Ruler,
 } from 'lucide-react'
 
 import useLiveSensors from '../hooks/useLiveSensors'
-import useSensorPredictions from '../hooks/useSensorPredictions'
-import { calculateRisk } from '../services/riskEngine'
-
-function normalizeRiskLevel(level) {
-  const normalized = String(level || '').toLowerCase()
-
-  const mapping = {
-    low: 'LOW',
-    watch: 'MODERATE',
-    warning: 'HIGH',
-    evacuate: 'CRITICAL',
-  }
-
-  return mapping[normalized] || 'LOW'
-}
 
 function StatusBadge({ status }) {
   const styles = {
@@ -34,68 +22,66 @@ function StatusBadge({ status }) {
   }
 
   return (
-    <span
-      className={`rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider ${
-        styles[status]
-      }`}
-    >
+    <span className={`rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider ${styles[status] || styles.Warning}`}>
       {status}
     </span>
   )
 }
 
-function SensorCard({ sensor, mlPrediction }) {
-  const fallbackRisk = calculateRisk(sensor)
+function formatValue(value, unit = '') {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) {
+    return 'No reading'
+  }
 
-  const risk = mlPrediction
-    ? {
-        score: Math.round(mlPrediction.final_score * 100),
-        level: normalizeRiskLevel(mlPrediction.risk_level),
-      }
-    : fallbackRisk
+  return `${value}${unit}`
+}
 
+function SensorCard({ sensor }) {
   const metrics = [
     {
-      label: 'Rainfall',
-      value: `${sensor.rainfall} mm`,
+      label: 'Rain Sensor',
+      value: formatValue(sensor.rainRaw),
+      unit: 'Raw ADC',
       icon: CloudRain,
     },
     {
-      label: 'Water Level',
-      value: `${sensor.waterLevel} m`,
+      label: 'Water Sensor',
+      value: formatValue(sensor.waterLevelRaw),
+      unit: 'Raw ADC',
       icon: Droplets,
     },
     {
-      label: 'Flow Rate',
-      value: `${sensor.flowRate} m³/s`,
-      icon: Gauge,
-    },
-    {
       label: 'Soil Moisture',
-      value: `${sensor.soilMoisture}%`,
+      value: formatValue(sensor.soilMoistureRaw),
+      unit: 'Raw ADC',
       icon: Sprout,
     },
     {
       label: 'Temperature',
-      value: `${sensor.temperature}°C`,
+      value: formatValue(sensor.temperature, ' °C'),
+      unit: 'DHT sensor',
       icon: Thermometer,
     },
     {
       label: 'Humidity',
-      value: `${sensor.humidity}%`,
+      value: formatValue(sensor.humidity, ' %'),
+      unit: 'Relative humidity',
       icon: Wind,
+    },
+    {
+      label: 'Ultrasonic Distance',
+      value: formatValue(sensor.distance, ' cm'),
+      unit: 'HC-SR04',
+      icon: Ruler,
     },
   ]
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5 transition duration-300 hover:border-white/15 hover:bg-white/[0.04]">
-
-      {/* Sensor Header */}
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-cyan-400" />
-
             <h2 className="text-sm font-semibold text-slate-100">
               {sensor.id}
             </h2>
@@ -109,53 +95,23 @@ function SensorCard({ sensor, mlPrediction }) {
         <StatusBadge status={sensor.status} />
       </div>
 
-      {/* Flood Risk */}
       <div className="mt-5 rounded-xl border border-white/5 bg-black/20 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-slate-500">
-              Flood Risk
-            </p>
-
-            <p className="mt-1 text-xl font-semibold text-slate-100">
-              {risk.score}%
-            </p>
-          </div>
-
-          <span
-            className={`rounded-full px-3 py-1 text-[10px] font-semibold tracking-wider ${
-              risk.level === 'CRITICAL'
-                ? 'bg-red-400/10 text-red-400'
-                : risk.level === 'HIGH'
-                  ? 'bg-orange-400/10 text-orange-400'
-                  : risk.level === 'MODERATE'
-                    ? 'bg-amber-400/10 text-amber-400'
-                    : 'bg-emerald-400/10 text-emerald-400'
-            }`}
-          >
-            {risk.level}
-          </span>
+        <div className="flex items-center gap-2">
+          <Radio className="h-4 w-4 text-emerald-400" />
+          <p className="text-[10px] uppercase tracking-wider text-slate-500">
+            Hardware connection
+          </p>
         </div>
 
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
-          <div
-            className="h-full rounded-full bg-current transition-all duration-700"
-            style={{ width: `${risk.score}%` }}
-          />
-        </div>
+        <p className="mt-2 text-sm font-semibold text-emerald-400">
+          ESP32 connected to HydroSentry
+        </p>
 
-        {mlPrediction && (
-          <div className="mt-3 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-
-            <span className="text-[10px] uppercase tracking-wider text-slate-500">
-              ML inference active
-            </span>
-          </div>
-        )}
+        <p className="mt-1 text-xs text-slate-500">
+          Live readings received from Render backend
+        </p>
       </div>
 
-      {/* Metrics */}
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
         {metrics.map((metric) => {
           const Icon = metric.icon
@@ -167,7 +123,6 @@ function SensorCard({ sensor, mlPrediction }) {
             >
               <div className="flex items-center gap-2">
                 <Icon className="h-3.5 w-3.5 text-slate-500" />
-
                 <p className="text-[10px] uppercase tracking-wider text-slate-500">
                   {metric.label}
                 </p>
@@ -176,15 +131,17 @@ function SensorCard({ sensor, mlPrediction }) {
               <p className="mt-2 text-sm font-semibold text-slate-200">
                 {metric.value}
               </p>
+
+              <p className="mt-1 text-[10px] text-slate-600">
+                {metric.unit}
+              </p>
             </div>
           )
         })}
       </div>
 
-      {/* Footer */}
       <div className="mt-5 flex items-center gap-2 border-t border-white/5 pt-4">
         <Clock className="h-3.5 w-3.5 text-slate-600" />
-
         <p className="text-[11px] text-slate-500">
           Last update: {sensor.lastUpdate}
         </p>
@@ -195,10 +152,6 @@ function SensorCard({ sensor, mlPrediction }) {
 
 function Monitoring() {
   const liveSensors = useLiveSensors()
-
-  const {
-    predictions: mlPredictions,
-  } = useSensorPredictions(liveSensors)
 
   const onlineCount = liveSensors.filter(
     (sensor) => sensor.status === 'Online'
@@ -214,7 +167,6 @@ function Monitoring() {
 
   return (
     <div>
-      {/* Page Header */}
       <div>
         <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
           Real-Time Telemetry
@@ -238,13 +190,11 @@ function Monitoring() {
         </div>
       </div>
 
-      {/* Network Summary */}
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
           <p className="text-[10px] uppercase tracking-wider text-slate-500">
             Online Nodes
           </p>
-
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             {onlineCount}
           </p>
@@ -254,7 +204,6 @@ function Monitoring() {
           <p className="text-[10px] uppercase tracking-wider text-slate-500">
             Warning Nodes
           </p>
-
           <p className="mt-2 text-2xl font-semibold text-amber-400">
             {warningCount}
           </p>
@@ -264,22 +213,28 @@ function Monitoring() {
           <p className="text-[10px] uppercase tracking-wider text-slate-500">
             Critical Nodes
           </p>
-
           <p className="mt-2 text-2xl font-semibold text-red-400">
             {criticalCount}
           </p>
         </div>
       </div>
 
-      {/* Sensor List */}
       <div className="mt-8 space-y-4">
-        {liveSensors.map((sensor) => (
-          <SensorCard
-            key={sensor.id}
-            sensor={sensor}
-            mlPrediction={mlPredictions[sensor.id]}
-          />
-        ))}
+        {liveSensors.length > 0 ? (
+          liveSensors.map((sensor) => (
+            <SensorCard key={sensor.id} sensor={sensor} />
+          ))
+        ) : (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-center">
+            <Radio className="mx-auto h-8 w-8 text-slate-500" />
+            <p className="mt-3 text-sm font-semibold text-slate-200">
+              Waiting for sensor data
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Check that your ESP32 is powered on and uploading readings.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
